@@ -9,11 +9,9 @@ const authRoutes = require('./routes/auth');
 const roomRouter = require('./routes/roomRoutes');
 const upload = require('./routes/upload');
 const meetingRoutes = require('./routes/meeting');
-<<<<<<< HEAD
 const mongoose = require('mongoose');
 const documentRoutes = require('./routes/document');
-=======
->>>>>>> 8e7eb8dffc68bbd36a79b141c1af865882ab880c
+
 
 const app = express();
 
@@ -41,12 +39,11 @@ app.use(
     })
 );
 
-<<<<<<< HEAD
+
 // เชื่อมต่อฐานข้อมูล MongoDB
 mongoose.connect('mongodb://localhost:27017/meetingdb', { useNewUrlParser: true, useUnifiedTopology: true });
 
-=======
->>>>>>> 8e7eb8dffc68bbd36a79b141c1af865882ab880c
+
 // สร้าง route สำหรับค้นหา users
 app.get('/api/users', async (req, res) => {
     try {
@@ -70,10 +67,9 @@ app.use('/api', authRoutes);
 app.use('/api/rooms', roomRouter);
 app.use('/api/upload', upload);
 app.use('/api/meeting', meetingRoutes);
-<<<<<<< HEAD
+
 app.use('/api/documents', documentRoutes);
-=======
->>>>>>> 8e7eb8dffc68bbd36a79b141c1af865882ab880c
+
 app.use(require('./routes/meeting'));
 // Handle undefined routes
 app.use((req, res, next) => {
@@ -83,11 +79,10 @@ app.use((req, res, next) => {
 // Global error handler
 app.use(globalErrorHandler);
 
-<<<<<<< HEAD
+
 app.listen(8000, () => {
     console.log('Server running on port 8000');
 });
 
-=======
->>>>>>> 8e7eb8dffc68bbd36a79b141c1af865882ab880c
+
 module.exports = app;
