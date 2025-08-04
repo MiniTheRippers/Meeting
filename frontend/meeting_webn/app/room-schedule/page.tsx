@@ -67,11 +67,11 @@ export default function RoomSchedulePage() {
         });
     };
 
-    const handleChange = (e) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const data = {
             roomName: form.roomName,
@@ -263,4 +263,4 @@ export default function RoomSchedulePage() {
             </main>
         </div>
     );
-} 
+}

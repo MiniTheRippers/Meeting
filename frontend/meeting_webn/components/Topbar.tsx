@@ -17,7 +17,8 @@ export default function Topbar() {
     const [user, setUser] = useState({
         name: "ผู้ดูแลระบบ",
         position: "IT Management",
-        avatar: "/avatar.png"
+        avatar: "/avatar.png",
+        role: "SuperAdmin" // เพิ่มบรรทัดนี้
     });
 
     useEffect(() => {
@@ -37,7 +38,7 @@ export default function Topbar() {
         }
     }, []);
 
-    const handleSaveProfile = (newUser) => {
+    const handleSaveProfile = (newUser: any) => {
         setUser(newUser);
         localStorage.setItem("userProfile", JSON.stringify(newUser));
     };
