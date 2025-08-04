@@ -6,7 +6,10 @@ const app = express();
 dotenv.config({ path: './config.env' });
 const meetingRequestsRouter = require('./routes/meetingRequests');
 const roomRoutes = require('./routes/roomRoutes');
+<<<<<<< HEAD
 const documentRoutes = require('./routes/document');
+=======
+>>>>>>> 8e7eb8dffc68bbd36a79b141c1af865882ab880c
 
 const db = process.env.DB;
 
@@ -30,7 +33,10 @@ app.use(express.json());
 
 app.use('/api/meeting-requests', meetingRequestsRouter);
 app.use('/api/rooms', roomRoutes);
+<<<<<<< HEAD
 app.use('/api/documents', documentRoutes);
+=======
+>>>>>>> 8e7eb8dffc68bbd36a79b141c1af865882ab880c
 
 const userRoutes = require('./routes/userRoutes');
 app.use('/api/users', userRoutes);

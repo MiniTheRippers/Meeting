@@ -11,12 +11,20 @@ import {
     User,
     Settings,
     LogOut,
+<<<<<<< HEAD
 } from "lucide-react";
 import React, { useState } from "react";
 
 export default function Sidebar() {
     const router = useRouter();
     const [settingOpen, setSettingOpen] = useState(false);
+=======
+    Search,
+} from "lucide-react";
+
+export default function Sidebar() {
+    const router = useRouter();
+>>>>>>> 8e7eb8dffc68bbd36a79b141c1af865882ab880c
 
     return (
         <aside className="group fixed top-0 left-0 h-screen w-20 hover:w-64 bg-white flex flex-col items-center justify-between py-4 shadow z-40 transition-all duration-300 overflow-hidden">
@@ -69,15 +77,20 @@ export default function Sidebar() {
                         </div>
                     </Link>
                     <span className="pl-4 mt-4 mb-1 text-xs font-bold text-gray-400 tracking-wider opacity-0 group-hover:opacity-100 transition-all hidden group-hover:inline">USER</span>
+<<<<<<< HEAD
                     {/* คลิกแล้วไปหน้าผู้ใช้งานระบบ */}
                     <button
                         className="flex items-center w-12 h-12 rounded-xl hover:bg-gray-100 transition-all group-hover:w-full cursor-pointer"
                         onClick={() => router.push("/user")}
                     >
+=======
+                    <div className="flex items-center w-12 h-12 rounded-xl hover:bg-gray-100 transition-all group-hover:w-full cursor-pointer">
+>>>>>>> 8e7eb8dffc68bbd36a79b141c1af865882ab880c
                         <User size={40} className="pl-4" />
                         <span className="ml-3 text-base font-medium px-3 py-1 rounded bg-white text-blue-500 shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap hidden group-hover:inline">
                             ผู้ใช้งานระบบ
                         </span>
+<<<<<<< HEAD
                     </button>
                     <span className="pl-4 mt-4 mb-1 text-xs font-bold text-gray-400 tracking-wider opacity-0 group-hover:opacity-100 transition-all hidden group-hover:inline">SETTING</span>
                     {/* Dropdown Setting */}
@@ -86,10 +99,18 @@ export default function Sidebar() {
                             className="flex items-center w-14 h-12 rounded-xl bg-emerald-500 text-white shadow-md mb-1 transition-all group-hover:w-full cursor-pointer hover:shadow-lg"
                             onClick={() => setSettingOpen((prev) => !prev)}
                         >
+=======
+                    </div>
+                    <span className="pl-4 mt-4 mb-1 text-xs font-bold text-gray-400 tracking-wider opacity-0 group-hover:opacity-100 transition-all hidden group-hover:inline">SETTING</span>
+                    {/* Dropdown Setting */}
+                    <div className="w-full">
+                        <button className="flex items-center w-14 h-12 rounded-xl bg-emerald-500 text-white shadow-md mb-1 transition-all group-hover:w-full cursor-pointer hover:shadow-lg">
+>>>>>>> 8e7eb8dffc68bbd36a79b141c1af865882ab880c
                             <Settings size={40} className="pl-4" />
                             <span className="ml-3 text-base font-semibold px-3 py-1 rounded bg-white text-emerald-600 shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap hidden group-hover:inline">
                                 ตั้งค่าระบบ
                             </span>
+<<<<<<< HEAD
                             <svg
                                 className={`ml-auto mr-4 w-4 h-4 opacity-0 group-hover:opacity-100 transition-all hidden group-hover:inline ${settingOpen ? "rotate-180" : ""}`}
                                 fill="none"
@@ -117,6 +138,15 @@ export default function Sidebar() {
                                 </button>
                             </div>
                         )}
+=======
+                            <svg className="ml-auto mr-4 w-4 h-4 opacity-0 group-hover:opacity-100 transition-all hidden group-hover:inline" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                        </button>
+                        {/* เมนูย่อย (ตัวอย่าง) */}
+                        <div className="ml-16 mt-1 opacity-0 group-hover:opacity-100 transition-all hidden group-hover:block">
+                            <div className="flex items-center h-8 text-sm text-gray-700 bg-gray-50 rounded px-3 mb-1">ตั้งค่าระบบ</div>
+                            <div className="flex items-center h-8 text-sm text-gray-700 bg-gray-50 rounded px-3">ตั้งค่าอื่น ๆ</div>
+                        </div>
+>>>>>>> 8e7eb8dffc68bbd36a79b141c1af865882ab880c
                     </div>
                 </div>
             </div>
