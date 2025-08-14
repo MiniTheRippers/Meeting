@@ -1,26 +1,30 @@
 "use client"
 import Link from 'next/link'
 import React, { useState } from 'react'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button' // ต้องแน่ใจว่า component นี้ใช้งานได้
 import axios from 'axios'
 import { Loader2 } from 'lucide-react'
-import { API_URL } from '@/server'
 import { useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
 import { setAuthUser } from '@/store/authSlice';
+
+// กำหนด API_URL โดยตรงหรือในไฟล์ environment
+const API_URL = "http://localhost:8000"; // แก้ไขตาม API จริงของคุณ
 
 const Signup = () => {
 
     const dispatch = useDispatch();
     const router = useRouter();
-    const[loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
-        username:"",
-        email:"",
-        password:"",
-        passwordConfirm:"",
+        username: "",
+        email: "",
+        password: "",
+        passwordConfirm: "",
+        role: "user", // เพิ่ม role default เป็น user
     });
     const [message, setMessage] = useState("");
+    const [isError, setIsError] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -32,10 +36,12 @@ const Signup = () => {
 
     const submitHandler = async (e) => {
         e.preventDefault();
+        setMessage("");
+        setIsError(false);
 
-        // เช็ค password กับ confirm password
         if (formData.password !== formData.passwordConfirm) {
-            alert("รหัสผ่านไม่ตรงกัน");
+            setMessage("รหัสผ่านไม่ตรงกัน");
+            setIsError(true);
             return;
         }
 
@@ -43,32 +49,37 @@ const Signup = () => {
 
         try {
             const response = await axios.post(
-                `${API_URL}/users/signup`,
+                `${API_URL}/api/v1/users/signup`,
                 {
                     username: formData.username,
                     email: formData.email,
                     password: formData.password,
                     passwordConfirm: formData.passwordConfirm,
+                    role: formData.role, // ส่ง role ไป backend
                 },
                 { withCredentials: true },
             );
             dispatch(setAuthUser(response.data.data.user));
             handleSignupSuccess();
         } catch (error) {
+            let errorMessage = "เกิดข้อผิดพลาดไม่ทราบสาเหตุ";
             if (error.response) {
-                alert("Error: " + (error.response.data.message || JSON.stringify(error.response.data)));
+                errorMessage = error.response.data.message || JSON.stringify(error.response.data);
             } else if (error.request) {
-                alert("No response from server. Please check your API server.");
+                errorMessage = "ไม่ได้รับการตอบกลับจากเซิร์ฟเวอร์ โปรดตรวจสอบ API Server ของคุณ";
             } else {
-                alert("Error: " + error.message);
+                errorMessage = error.message;
             }
+            setMessage(errorMessage);
+            setIsError(true);
         } finally {
             setLoading(false);
         }
     };
 
     const handleSignupSuccess = () => {
-        setMessage("สมัครสมาชิกสำเร็จ กรุณาตรวจสอบอีเมลของคุณ");
+        setMessage("สมัครสมาชิกสำเร็จ กำลังนำไปยังหน้ายืนยัน...");
+        setIsError(false);
         setTimeout(() => {
             setMessage("");
             router.push("/auth/verify");
@@ -76,44 +87,98 @@ const Signup = () => {
     };
 
     return (
-        <div className='flex items-center justify-center h-screen bg-gray-100'>
-            <div className='shadow-md rounded-lg w-[80%] sm:w-[350px] md:w-[350px] lg:w-[450px] p-8 bg-white'>
-                <h1 className='text-center font-bold text-3xl mb-4 mt-4'>LOGO</h1>
-                <form onSubmit={submitHandler}>
+        <div className='flex items-center justify-center min-h-screen bg-gray-100 p-4'>
+            <div className='shadow-xl rounded-xl w-full sm:w-[400px] p-8 bg-white'>
+                <h1 className='text-center font-bold text-4xl mb-2 text-gray-800'>LOGO</h1>
+                <p className="text-center text-gray-500 mb-6">สร้างบัญชีผู้ใช้ใหม่</p>
+
+                <form onSubmit={submitHandler} className="space-y-4">
                     <div>
-                        <label htmlFor="username" className='block mb-2 text-sm font-bold'>Username</label>
-                        <input type="text" name='username' placeholder='Username' value={formData.username} onChange={handleChange} className='px-4 py-2 bg-gray-200 rounded-mb outline-none w-full'/>
+                        <label htmlFor="username" className='block mb-1 text-sm font-semibold text-gray-700'>Username</label>
+                        <input
+                            type="text"
+                            name='username'
+                            placeholder='กรุณากรอกชื่อผู้ใช้งาน'
+                            value={formData.username}
+                            onChange={handleChange}
+                            className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200'
+                        />
                     </div>
-                    <div className='mt-4'>
-                        <label htmlFor="email" className='block mb-2 text-sm font-bold'>Email</label>
-                        <input type="email" name='email' placeholder='Email' value={formData.email} onChange={handleChange} className='px-4 py-2 bg-gray-200 rounded-mb outline-none w-full'/>
+                    <div>
+                        <label htmlFor="email" className='block mb-1 text-sm font-semibold text-gray-700'>Email</label>
+                        <input
+                            type="email"
+                            name='email'
+                            placeholder='กรุณากรอกอีเมล'
+                            value={formData.email}
+                            onChange={handleChange}
+                            className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200'
+                        />
                     </div>
-                    <div className='mt-4'>
-                        <label htmlFor="password" className='block mb-2 text-sm font-bold'>Password</label>
-                        <input type="password" name='password' placeholder='Password' value={formData.password} onChange={handleChange} className='px-4 py-2 bg-gray-200 rounded-mb outline-none w-full'/>
+                    <div>
+                        <label htmlFor="password" className='block mb-1 text-sm font-semibold text-gray-700'>Password</label>
+                        <input
+                            type="password"
+                            name='password'
+                            placeholder='กรุณากรอกรหัสผ่าน'
+                            value={formData.password}
+                            onChange={handleChange}
+                            className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200'
+                        />
                     </div>
-                    <div className='mt-4'>
-                        <label htmlFor="passwordconfirm" className='block mb-2 text-sm font-bold'>Confirm Password</label>
-                        <input type="password" name='passwordConfirm' placeholder='Confirm Password' value={formData.passwordConfirm} onChange={handleChange} className='px-4 py-2 bg-gray-200 rounded-mb outline-none w-full'/>
+                    <div>
+                        <label htmlFor="passwordConfirm" className='block mb-1 text-sm font-semibold text-gray-700'>Confirm Password</label>
+                        <input
+                            type="password"
+                            name='passwordConfirm'
+                            placeholder='กรุณายืนยันรหัสผ่าน'
+                            value={formData.passwordConfirm}
+                            onChange={handleChange}
+                            className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200'
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="role" className='block mb-1 text-sm font-semibold text-gray-700'>ประเภทผู้ใช้</label>
+                        <select
+                            name="role"
+                            value={formData.role}
+                            onChange={handleChange}
+                            className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200'
+                        >
+                            <option value="user">User</option>
+                            <option value="admin">Admin</option>
+                        </select>
                     </div>
                     {!loading ? (
-                        <button type='submit' className='mt-6 w-full' size={'lg'}>Submit</button>
+                        <button
+                            type='submit'
+                            className='mt-6 w-full bg-blue-600 text-white font-semibold py-2 rounded-lg shadow-md hover:bg-blue-700 transition duration-200'
+                            size={'lg'}>
+                            สมัครสมาชิก
+                        </button>
                     ) : (
-                        <button className='mt-6 w-full' disabled>
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            Loading...
+                        <button
+                            className='mt-6 w-full bg-blue-500 text-white font-semibold py-2 rounded-lg shadow-md'
+                            disabled>
+                            <Loader2 className="h-5 w-5 animate-spin mx-auto text-white" />
                         </button>
                     )}
                 </form>
+
                 {message && (
-                    <div style={{ color: "green", marginBottom: 10 }}>{message}</div>
+                    <div className={`mt-4 p-3 rounded-lg text-center ${isError ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                        {message}
+                    </div>
                 )}
-                <h1 className='mt-6 text-center'>Already have account?{" "}
+                
+                <p className='mt-6 text-center text-sm text-gray-600'>
+                    มีบัญชีอยู่แล้ว?{" "}
                     <Link href='/auth/login'>
-                    <span className='text-blue-600 cursor-pointer'>Login
-                </span>
-                </Link>
-                </h1>
+                        <span className='text-blue-600 font-semibold hover:underline cursor-pointer'>
+                            เข้าสู่ระบบที่นี่
+                        </span>
+                    </Link>
+                </p>
             </div>
         </div>
     )

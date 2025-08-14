@@ -3,6 +3,7 @@ const router = express.Router();
 const Room = require('../model/roomModel');
 const MeetingRoom = require('../model/meetingModel');
 
+
 // GET all rooms
 router.get('/', async (req, res) => {
     const rooms = await Room.find();

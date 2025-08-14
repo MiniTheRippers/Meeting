@@ -11,6 +11,9 @@ const upload = require('./routes/upload');
 const meetingRoutes = require('./routes/meeting');
 const mongoose = require('mongoose');
 const documentRoutes = require('./routes/document');
+const express = require('express');
+
+
 
 
 const app = express();
@@ -25,8 +28,10 @@ app.use((req, res, next) => {
 });
 
 // Body parser, reading data from body into req.body
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '200mb' }));
+app.use(express.urlencoded({ extended: true, limit: '200mb' }));
+
+
 
 // Cookie parser
 app.use(cookieParser());
@@ -67,7 +72,83 @@ app.use('/api', authRoutes);
 app.use('/api/rooms', roomRouter);
 app.use('/api/upload', upload);
 app.use('/api/meeting', meetingRoutes);
+app.use('/api/documents', documentRoutes);
 
+app.use(require('./routes/meeting'));
+// Handle undefined routes
+app.use((req, res, next) => {
+    next(new AppError(`ไม่พบ URL: ${req.originalUrl} บนเซิร์ฟเวอร์นี้!`, 404));
+});
+
+// Global error handler
+app.use(globalErrorHandler);
+const express = require('express');
+const cors = require('cors');
+const cookieParser = require('cookie-parser');
+const userRouter = require('./routes/userRouters');
+const globalErrorHandler = require('./controller/errorController');
+const AppError = require('./utils/appError');
+const User = require('./model/userModel');
+const authRoutes = require('./routes/auth');
+const roomRouter = require('./routes/roomRoutes');
+const upload = require('./routes/upload');
+const meetingRoutes = require('./routes/meeting');
+const mongoose = require('mongoose');
+
+
+const app = express();
+
+// Logging middleware
+app.use((req, res, next) => {
+    console.log('Request URL:', req.url);
+    console.log('Request Method:', req.method);
+    console.log('Request Headers:', req.headers);
+    console.log('Request Body:', req.body);
+    next();
+});
+
+// Body parser, reading data from body into req.body
+app.use(express.json({ limit: '200mb' }));
+app.use(express.urlencoded({ extended: true, limit: '200mb' }));
+
+// Cookie parser
+app.use(cookieParser());
+
+// CORS
+app.use(
+    cors({
+        origin: 'http://localhost:3000',
+        credentials: true,
+    })
+);
+
+
+// เชื่อมต่อฐานข้อมูล MongoDB
+mongoose.connect('mongodb://localhost:27017/meetingdb', { useNewUrlParser: true, useUnifiedTopology: true });
+
+
+// สร้าง route สำหรับค้นหา users
+app.get('/api/users', async (req, res) => {
+    try {
+        const search = req.query.search || '';
+        const users = await User.find({
+            $or: [
+                { name: { $regex: search, $options: 'i' } },
+                { email: { $regex: search, $options: 'i' } }
+            ]
+        });
+        res.json(users);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Routes
+app.use("/api/v1/users", userRouter);
+app.use('/api', authRoutes);
+app.use('/api/rooms', roomRouter);
+app.use('/api/upload', upload);
+app.use('/api/meeting', meetingRoutes);
 app.use('/api/documents', documentRoutes);
 
 app.use(require('./routes/meeting'));
@@ -79,6 +160,13 @@ app.use((req, res, next) => {
 // Global error handler
 app.use(globalErrorHandler);
 
+
+app.listen(8000, () => {
+    console.log('Server running on port 8000');
+});
+
+
+module.exports = app;
 
 app.listen(8000, () => {
     console.log('Server running on port 8000');

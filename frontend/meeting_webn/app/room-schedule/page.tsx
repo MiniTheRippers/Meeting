@@ -47,7 +47,6 @@ export default function RoomSchedulePage() {
     useEffect(() => {
         axios.get("http://localhost:8000/api/rooms")
             .then(res => {
-                console.log("rooms data:", res.data);
                 setRooms(res.data);
             })
             .catch(err => {
@@ -67,11 +66,11 @@ export default function RoomSchedulePage() {
         });
     };
 
-    const handleChange = (e) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const data = {
             roomName: form.roomName,
@@ -104,163 +103,194 @@ export default function RoomSchedulePage() {
     };
 
     return (
-        <div className="flex">
-            <Topbar />
+        <div className="flex bg-gray-100 min-h-screen">
             <Sidebar />
-            <main className="flex-1 p-8 bg-gray-50 min-h-screen pt-[56px] pl-[80px]">
-                <h1 className="text-3xl font-bold mb-4">ตารางขอใช้ห้องประชุม</h1>
-                <div className="flex gap-4 w-full p-4">
-                    {/* ฟอร์มจองห้องประชุม */}
-                    <div className="bg-white rounded-lg shadow p-6 flex-1 ">
-                        <h2 className="font-bold mb-4 flex items-center gap-2 ">
-                            <span>📝</span> ฟอร์มขอใช้ห้องประชุม
-                        </h2>
-                        <p className=" border-b border-solid border-back-600"></p>
-
-                        <div className='m-2 mt-7'>
-                            <form onSubmit={handleSubmit}>
-                                <div className="grid grid-cols-2 gap-4 ">
+            <div className="flex-1 flex flex-col pt-16 ml-16 md:ml-64 transition-all duration-300">
+                <Topbar />
+                <main className="flex-1 p-6 md:p-8 bg-indigo-50">
+                    <h1 className="text-3xl font-extrabold text-gray-900 mb-6">ตารางขอใช้ห้องประชุม</h1>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 ">
+                        {/* ฟอร์มจองห้องประชุม */}
+                        <div className="lg:col-span-2 bg-white rounded-xl shadow-lg p-6 flex flex-col">
+                            <h2 className="text-2xl font-bold text-gray-800 mb-4 pb-4 border-b border-gray-200 flex items-center">
+                                <span className="mr-2 text-blue-500">📝</span> ฟอร์มขอใช้ห้องประชุม
+                            </h2>
+                            <form onSubmit={handleSubmit} className="space-y-6 flex-1">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {/* ห้องประชุม */}
                                     <div>
-                                        <label>ห้องประชุม *</label>
-                                        <pre />
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">ห้องประชุม <span className="text-red-500">*</span></label>
                                         <input
                                             name="roomName"
                                             value={form.roomName}
                                             onChange={handleChange}
-                                            className="input rounded-lg border-1 w-full h-8"
-                                            placeholder=" กรุณากรอกห้องประชุมที่นี่"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                            placeholder="กรุณากรอกห้องประชุมที่นี่"
                                         />
                                     </div>
                                     {/* สถานที่ตั้ง */}
                                     <div>
-                                        <label>สถานที่ตั้ง *</label>
-                                        <pre />
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">สถานที่ตั้ง <span className="text-red-500">*</span></label>
                                         <input
                                             name="location"
                                             value={form.location}
                                             onChange={handleChange}
-                                            className="input rounded-lg border-1 w-full h-8"
-                                            placeholder=" กรุณากรอกสถานที่ตั้งที่นี่"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                            placeholder="กรุณากรอกสถานที่ตั้งที่นี่"
                                         />
                                     </div>
                                     {/* จำนวนความจุ */}
                                     <div>
-                                        <label>จำนวนความจุ *</label>
-                                        <pre />
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">จำนวนความจุ <span className="text-red-500">*</span></label>
                                         <input
                                             name="capacity"
                                             value={form.capacity}
                                             onChange={handleChange}
-                                            className="input rounded-lg border-1 w-full h-8"
-                                            placeholder=" กรุณากรอกความจุที่นี่"
+                                            type="number"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                            placeholder="กรุณากรอกความจุที่นี่"
                                         />
                                     </div>
                                     {/* อุปกรณ์ */}
                                     <div>
-                                        <label>อุปกรณ์ *</label>
-                                        <pre />
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">อุปกรณ์ <span className="text-red-500">*</span></label>
                                         <input
                                             name="equipment"
                                             value={form.equipment}
                                             onChange={handleChange}
-                                            className="input rounded-lg border-1 w-full h-8"
-                                            placeholder=" กรุณากรอกอุปกรณ์ที่นี่"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                            placeholder="กรุณากรอกอุปกรณ์ที่นี่"
                                         />
                                     </div>
                                     {/* ตั้งแต่วันที่ */}
                                     <div>
-                                        <label>ตั้งแต่วันที่ *</label>
-                                        <pre />
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">ตั้งแต่วันที่ <span className="text-red-500">*</span></label>
                                         <input
                                             name="startDate"
                                             type="date"
                                             value={form.startDate}
                                             onChange={handleChange}
-                                            className="input rounded-lg border-1 w-full h-8"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                         />
                                     </div>
                                     {/* เวลา */}
                                     <div>
-                                        <label>เวลา *</label>
-                                        <pre />
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">เวลา <span className="text-red-500">*</span></label>
                                         <input
                                             name="startTime"
                                             type="time"
                                             value={form.startTime}
                                             onChange={handleChange}
-                                            className="input rounded-lg border-1 w-full h-8"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                         />
                                     </div>
                                     {/* ถึงวันที่ */}
                                     <div>
-                                        <label>ถึงวันที่ *</label>
-                                        <pre />
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">ถึงวันที่ <span className="text-red-500">*</span></label>
                                         <input
                                             name="endDate"
                                             type="date"
                                             value={form.endDate}
                                             onChange={handleChange}
-                                            className="input rounded-lg border-1 w-full h-8"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                         />
                                     </div>
                                     {/* เวลา */}
                                     <div>
-                                        <label>เวลา *</label>
-                                        <pre />
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">เวลา <span className="text-red-500">*</span></label>
                                         <input
                                             name="endTime"
                                             type="time"
                                             value={form.endTime}
                                             onChange={handleChange}
-                                            className="input rounded-lg border-1 w-full h-8"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                         />
                                     </div>
                                 </div>
                                 {/* รายละเอียดเพิ่มเติม */}
-                                <div className="mt-4 ">
-                                    <label>รายละเอียดเพิ่มเติม *</label>
+                                <div className="mt-4">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">รายละเอียดเพิ่มเติม <span className="text-red-500">*</span></label>
                                     <textarea
                                         name="detail"
                                         value={form.detail}
                                         onChange={handleChange}
-                                        className="input rounded-lg border-1 w-full h-full"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                         rows={3}
                                         placeholder="กรุณากรอกรายละเอียดเพิ่มเติมที่นี่"
                                     />
                                 </div>
                                 {/* ปุ่ม */}
-                                <div className="flex gap-2 mt-4">
-                                    <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">บันทึกข้อมูล</button>
-                                    <button type="button" className="bg-red-500 text-white px-4 py-2 rounded">ยกเลิก</button>
+                                <div className="flex gap-4 mt-6 pt-4 border-t border-gray-200">
+                                    <button type="submit" className="flex-1 bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">บันทึกข้อมูล</button>
+                                    <button type="button" className="flex-1 bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">ยกเลิก</button>
                                 </div>
                             </form>
                         </div>
-                    </div>
-                    {/* รายการห้องประชุม */}
-                    <div className="w-[350px] bg-white rounded-lg shadow p-4">
-                        <h3 className="font-bold mb-2 flex items-center gap-2">เลือกห้องประชุม</h3>
-                        <div className="flex flex-col gap-2">
-                            {rooms.length === 0 ? (
-                                <li>ไม่มีข้อมูลห้องประชุม</li>
-                            ) : (
-                                rooms.map(room => (
-                                    <div key={room._id} onClick={() => handleSelectRoom(room)} style={{cursor: "pointer"}} className="border rounded-lg p-2 flex gap-2 items-center cursor-pointer hover:border-blue-500">
-                                        <img src={room.image || "/room1.png"} alt={room.name} className="w-12 h-12" />
-                                        <div>
-                                            <div className="font-bold text-blue-600">{room.name}</div>
-                                            <div className="text-xs">ความจุ : {room.capacity} คน</div>
-                                            <div className="text-xs">สถานที่ตั้ง : {room.location}</div>
-                                            <div className="text-xs">อุปกรณ์ : {room.equipment.join(", ")}</div>
+                        {/* รายการห้องประชุม */}
+                        <div className="lg:col-span-1 bg-white rounded-xl shadow-lg p-6">
+                            <h3 className="text-2xl font-bold text-gray-800 mb-4 pb-4 border-b border-gray-200 flex items-center">
+                                <span className="mr-2 text-green-500">🏢</span> เลือกห้องประชุม
+                            </h3>
+                            <div className="space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
+                                {rooms.length === 0 ? (
+                                    <div className="text-center text-gray-500 py-8">ไม่มีข้อมูลห้องประชุม</div>
+                                ) : (
+                                    rooms.map(room => (
+                                        <div
+                                            key={room._id}
+                                            onClick={() => handleSelectRoom(room)}
+                                            className={`
+                                                p-4 rounded-lg shadow-sm cursor-pointer
+                                                transition-all duration-200
+                                                border-2 ${selectedRoom === room._id ? 'border-blue-500 bg-blue-50' : 'border-transparent hover:border-gray-300'}
+                                            `}
+                                        >
+                                            <div className="flex items-start gap-4">
+                                                <img src={room.image || "/room1.png"} alt={room.name} className="w-16 h-16 rounded-md object-cover flex-shrink-0" />
+                                                <div className="flex-1">
+                                                    <div className="font-extrabold text-lg text-blue-600 mb-1">{room.name}</div>
+                                                    <div className="text-sm text-gray-600">
+                                                        <span className="font-semibold">ความจุ:</span> {room.capacity} คน
+                                                    </div>
+                                                    <div className="text-sm text-gray-600">
+                                                        <span className="font-semibold">สถานที่ตั้ง:</span> {room.location}
+                                                    </div>
+                                                    <div className="text-sm text-gray-600">
+                                                        <span className="font-semibold">อุปกรณ์:</span> {room.equipment.join(", ")}
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                ))
-                            )}
+                                    ))
+                                )}
+                            </div>
                         </div>
                     </div>
-                    
-                </div>
-            </main>
+                    {/* ตารางการจองห้องประชุม */}
+                    <div className="mt-6 bg-white rounded-xl shadow-lg p-6">
+                        <h2 className="text-2xl font-bold text-gray-800 mb-4 pb-4 border-b border-gray-200 flex items-center">
+                            <span className="mr-2 text-orange-500">📅</span> ตารางการจองห้องประชุม
+                        </h2>
+                        {selectedRoom ? (
+                            <FullCalendar
+                                plugins={[dayGridPlugin]}
+                                initialView="dayGridMonth"
+                                events={events}
+                                eventColor="#3b82f6" // สีน้ำเงินของ Tailwind
+                                headerToolbar={{
+                                    left: 'prev,next today',
+                                    center: 'title',
+                                    right: 'dayGridMonth,dayGridWeek,dayGridDay'
+                                }}
+                            />
+                        ) : (
+                            <div className="text-center text-gray-500 py-12 text-lg">
+                                โปรดเลือกห้องประชุมจากรายการทางด้านขวาเพื่อดูตารางการจอง
+                            </div>
+                        )}
+                    </div>
+                </main>
+            </div>
         </div>
     );
-} 
+}

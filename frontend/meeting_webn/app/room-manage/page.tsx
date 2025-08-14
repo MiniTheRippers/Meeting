@@ -25,9 +25,10 @@ export default function RoomManagePage() {
         { label: "คอมพิวเตอร์", value: "คอมพิวเตอร์" },
     ]);
     const [form, setForm] = useState<any>({ name: "", location: "", capacity: 0, equipment: [], image: "" });
+    const [search, setSearch] = useState("");
+    const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-    // โหลดข้อมูลห้องประชุม
     useEffect(() => {
         fetchRooms();
     }, []);
@@ -37,7 +38,7 @@ export default function RoomManagePage() {
             const res = await axios.get("http://localhost:8000/api/rooms");
             setRooms(res.data);
         } catch (err) {
-            console.error("ไม่สามารถดึงข้อมูลห้องประชุมได้", err);
+            setAlert({ type: "error", message: "ไม่สามารถดึงข้อมูลห้องประชุมได้" });
         }
     };
 
@@ -60,6 +61,10 @@ export default function RoomManagePage() {
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            if (file && file.size > 2 * 1024 * 1024) { // 2MB
+                alert("ไฟล์ภาพต้องไม่เกิน 2MB");
+                return;
+            }
             const reader = new FileReader();
             reader.onload = (ev) => {
                 setForm({ ...form, image: ev.target?.result as string });
@@ -87,110 +92,144 @@ export default function RoomManagePage() {
             image: form.image
         };
         try {
-            await axios.post("http://localhost:8000/api/rooms", data);
+            if (editRoom && editRoom._id) {
+                await axios.put(`http://localhost:8000/api/rooms/${editRoom._id}`, data);
+                setAlert({ type: "success", message: "แก้ไขข้อมูลสำเร็จ" });
+            } else {
+                await axios.post("http://localhost:8000/api/rooms", data);
+                setAlert({ type: "success", message: "เพิ่มห้องประชุมสำเร็จ" });
+            }
             fetchRooms();
             handleCloseModal();
         } catch (err) {
-            alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล");
+            setAlert({ type: "error", message: "เกิดข้อผิดพลาดในการบันทึกข้อมูล" });
         }
     };
 
     const handleDelete = async (id: string) => {
         if (confirm("ยืนยันการลบห้องประชุมนี้?")) {
-            await axios.delete(`http://localhost:8000/api/rooms/${id}`);
-            fetchRooms();
+            try {
+                await axios.delete(`http://localhost:8000/api/rooms/${id}`);
+                setAlert({ type: "success", message: "ลบห้องประชุมสำเร็จ" });
+                fetchRooms();
+            } catch {
+                setAlert({ type: "error", message: "เกิดข้อผิดพลาดในการลบข้อมูล" });
+            }
         }
     };
 
+    // Filter rooms by search
+    const filteredRooms = rooms.filter(room =>
+        room.name.toLowerCase().includes(search.toLowerCase()) ||
+        room.location.toLowerCase().includes(search.toLowerCase())
+    );
+
     return (
-        <div className="flex">
+        <div className="flex min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-blue-100">
             <Topbar />
             <Sidebar />
-            <main className="flex-1 p-8 bg-gray-50 min-h-screen pt-[56px] pl-[80px]">
-                <h1 className="text-3xl font-bold mb-4">จัดการใช้ห้องประชุม</h1>
+            <main className="flex-1 p-8 pt-[56px] pl-[80px]">
                 <div className="p-4">
-                    <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-2xl font-bold">จัดการห้องประชุม</h2>
+                    <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+                        <h2 className="text-2xl font-bold text-indigo-900">จัดการห้องประชุม</h2>
                         <button
-                            className="bg-blue-500 text-white px-4 py-2 rounded"
+                            className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-2 rounded-lg font-bold shadow hover:scale-105 transition-transform"
                             onClick={() => handleOpenModal()}
                         >
                             + เพิ่มห้องประชุม
                         </button>
                     </div>
-                    <div className="bg-white rounded-lg shadow p-4">
+                    {alert && (
+                        <div className={`mb-4 px-4 py-2 rounded text-white ${alert.type === "success" ? "bg-green-500" : "bg-red-500"}`}>
+                            {alert.message}
+                        </div>
+                    )}
+                    <div className="bg-white rounded-xl shadow-lg p-6">
                         {/* Filter/Search */}
-                        <div className="flex items-center gap-2 mb-2">
+                        <div className="flex flex-col md:flex-row items-center gap-2 mb-4">
                             <input
-                                className="border rounded px-2 py-1"
-                                placeholder="กรุณาเลือกกรองข้อมูล"
-                            />
-                            <input
-                                className="border rounded px-2 py-1 w-16"
-                                placeholder="10"
-                                type="number"
+                                className="border rounded px-3 py-2 w-full md:w-1/3"
+                                placeholder="ค้นหาชื่อห้องหรือสถานที่..."
+                                value={search}
+                                onChange={e => setSearch(e.target.value)}
                             />
                         </div>
                         {/* Table */}
-                        <table className="w-full text-center border-collapse">
-                            <thead>
-                                <tr className="bg-gray-100">
-                                    <th className="py-2">ID</th>
-                                    <th>ชื่อห้อง</th>
-                                    <th>สถานที่ตั้ง</th>
-                                    <th>จำนวนจุ</th>
-                                    <th>อุปกรณ์</th>
-                                    <th>สถานะ</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {rooms.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={7} className="py-4 text-gray-400">ไม่พบข้อมูลห้องประชุม</td>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-center border-collapse">
+                                <thead>
+                                    <tr className="bg-indigo-100 text-indigo-800">
+                                        <th className="py-2">#</th>
+                                        <th>ชื่อห้อง</th>
+                                        <th>สถานที่ตั้ง</th>
+                                        <th>จำนวนจุ</th>
+                                        <th>อุปกรณ์</th>
+                                        <th>รูปภาพ</th>
+                                        <th>Action</th>
                                     </tr>
-                                ) : (
-                                    rooms.map((room, idx) => (
-                                        <tr key={room._id} className="border-b">
-                                            <td>{idx + 1}</td>
-                                            <td>{room.name}</td>
-                                            <td>{room.location}</td>
-                                            <td>{room.capacity}</td>
-                                            <td>{room.equipment?.join(", ")}</td>
-                                            <td>พร้อมใช้งาน</td>
-                                            <td>
-                                                <button
-                                                    className="bg-yellow-400 text-white px-2 py-1 rounded mr-2"
-                                                    onClick={() => handleOpenModal(room)}
-                                                >
-                                                    แก้ไข
-                                                </button>
-                                                <button
-                                                    className="bg-red-500 text-white px-2 py-1 rounded"
-                                                    onClick={() => handleDelete(room._id!)}
-                                                >
-                                                    ลบ
-                                                </button>
-                                            </td>
+                                </thead>
+                                <tbody>
+                                    {filteredRooms.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={7} className="py-4 text-gray-400">ไม่พบข้อมูลห้องประชุม</td>
                                         </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
+                                    ) : (
+                                        filteredRooms.map((room, idx) => (
+                                            <tr key={room._id} className="border-b hover:bg-indigo-50 transition">
+                                                <td>{idx + 1}</td>
+                                                <td className="font-semibold">{room.name}</td>
+                                                <td>{room.location}</td>
+                                                <td>{room.capacity}</td>
+                                                <td>
+                                                    <span className="text-xs text-gray-700">{room.equipment?.join(", ")}</span>
+                                                </td>
+                                                <td>
+                                                    {room.image ? (
+                                                        <img src={room.image} alt="room" className="w-16 h-16 object-cover rounded-lg mx-auto" />
+                                                    ) : (
+                                                        <span className="text-gray-400">ไม่มีรูป</span>
+                                                    )}
+                                                </td>
+                                                <td>
+                                                    <button
+                                                        className="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded mr-2 transition"
+                                                        onClick={() => handleOpenModal(room)}
+                                                    >
+                                                        แก้ไข
+                                                    </button>
+                                                    <button
+                                                        className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded transition"
+                                                        onClick={() => handleDelete(room._id!)}
+                                                    >
+                                                        ลบ
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                         <div className="text-sm text-gray-500 mt-2">
-                            แสดง 1 ถึง {rooms.length} จาก {rooms.length} แถว
+                            แสดง 1 ถึง {filteredRooms.length} จาก {rooms.length} แถว
                         </div>
                     </div>
                     {/* Modal */}
                     {modalOpen && (
                         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-                            <div className="bg-white rounded-2xl shadow-lg p-8 w-[400px]">
-                                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">📝 ฟอร์มห้องประชุม</h3>
+                            <div className="bg-white rounded-2xl shadow-2xl p-8 w-[95vw] max-w-md relative">
+                                <button
+                                    className="absolute top-3 right-3 text-gray-400 hover:text-red-500 text-2xl"
+                                    onClick={handleCloseModal}
+                                    type="button"
+                                    title="ปิด"
+                                >×</button>
+                                <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-indigo-700">📝 ฟอร์มห้องประชุม</h3>
                                 <form onSubmit={handleSubmit} className="flex flex-col gap-3">
                                     {/* รูปภาพ */}
                                     <div className="flex justify-center mb-2">
                                         <div
-                                            className="w-24 h-24 bg-gray-100 rounded-lg flex items-center justify-center cursor-pointer overflow-hidden"
+                                            className="w-24 h-24 bg-gray-100 rounded-lg flex items-center justify-center cursor-pointer overflow-hidden border-2 border-indigo-200"
                                             onClick={() => fileInputRef.current?.click()}
                                         >
                                             {form.image ? (
@@ -198,7 +237,7 @@ export default function RoomManagePage() {
                                             ) : (
                                                 <svg width="48" height="48" fill="none" viewBox="0 0 24 24">
                                                     <rect width="24" height="24" rx="8" fill="#e5e7eb" />
-                                                    <path d="M8 17l4-4 4 4M12 13V7" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                                    <path d="M8 17l4-4 4 4M12 13V7" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                                 </svg>
                                             )}
                                             <input
@@ -211,9 +250,9 @@ export default function RoomManagePage() {
                                         </div>
                                     </div>
                                     {/* ชื่อห้อง */}
-                                    <h3>ชื่อห้องประชุม</h3>
+                                    <label className="font-semibold text-indigo-700">ชื่อห้องประชุม</label>
                                     <input
-                                        className="border rounded px-3 py-2"
+                                        className="border rounded px-3 py-2 focus:outline-indigo-400"
                                         name="name"
                                         placeholder="กรุณากรอกชื่อห้องประชุมที่นี่"
                                         value={form.name}
@@ -221,9 +260,9 @@ export default function RoomManagePage() {
                                         required
                                     />
                                     {/* สถานที่ตั้ง */}
-                                    <h3>สถานที่ตั้ง</h3>
+                                    <label className="font-semibold text-indigo-700">สถานที่ตั้ง</label>
                                     <input
-                                        className="border rounded px-3 py-2"
+                                        className="border rounded px-3 py-2 focus:outline-indigo-400"
                                         name="location"
                                         placeholder="กรุณากรอกสถานที่ตั้งที่นี่"
                                         value={form.location}
@@ -231,17 +270,19 @@ export default function RoomManagePage() {
                                         required
                                     />
                                     {/* ความจุ */}
-                                    <h3>ความจุ</h3>
+                                    <label className="font-semibold text-indigo-700">ความจุ</label>
                                     <input
-                                        className="border rounded px-3 py-2"
+                                        className="border rounded px-3 py-2 focus:outline-indigo-400"
                                         name="capacity"
                                         placeholder="กรุณากรอกความจุที่นี่"
                                         type="number"
+                                        min={1}
                                         value={form.capacity}
                                         onChange={handleChange}
                                         required
                                     />
                                     {/* อุปกรณ์ */}
+                                    <label className="font-semibold text-indigo-700">อุปกรณ์</label>
                                     <div className="grid grid-cols-2 gap-2 my-2">
                                         {equipmentList.map(eq => (
                                             <label key={eq.value} className="flex items-center gap-2 cursor-pointer">
@@ -249,7 +290,7 @@ export default function RoomManagePage() {
                                                     type="checkbox"
                                                     checked={form.equipment.includes(eq.value)}
                                                     onChange={() => handleEquipmentChange(eq.value)}
-                                                    className="accent-blue-500"
+                                                    className="accent-indigo-500"
                                                 />
                                                 {eq.label}
                                             </label>
@@ -257,10 +298,10 @@ export default function RoomManagePage() {
                                     </div>
                                     {/* ปุ่ม */}
                                     <div className="flex gap-2 mt-2">
-                                        <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded flex-1">
+                                        <button type="submit" className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-2 rounded font-bold flex-1 shadow hover:scale-105 transition-transform">
                                             {editRoom ? "บันทึกข้อมูล" : "เพิ่ม"}
                                         </button>
-                                        <button type="button" className="bg-red-500 text-white px-4 py-2 rounded flex-1" onClick={handleCloseModal}>
+                                        <button type="button" className="bg-gray-300 text-gray-700 px-4 py-2 rounded font-bold flex-1 shadow hover:bg-gray-400 transition" onClick={handleCloseModal}>
                                             ยกเลิก
                                         </button>
                                     </div>
@@ -272,4 +313,4 @@ export default function RoomManagePage() {
             </main>
         </div>
     );
-} 
+}

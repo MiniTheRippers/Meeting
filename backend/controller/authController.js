@@ -40,7 +40,7 @@ const createSendToken = (user, statusCode, res, message) => {
 };
 //signup  สมัครสมาชิก
 exports.signup = catchAsync(async (req, res, next) => {
-    const {email, password, passwordConfirm, username} = req.body;
+    const {email, password, passwordConfirm, username, role} = req.body;
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -61,6 +61,8 @@ exports.signup = catchAsync(async (req, res, next) => {
         passwordConfirm,
         otp,
         otpExpires,
+        role: role || 'user',
+        is_admin: role === 'admin',
     });
     
     try {
@@ -181,7 +183,7 @@ exports.login = catchAsync(async(req,res,next)=>{
         return  next(new AppError("Please provide email and password",400))
     }
 
-    const user = await User.findOne({email}).select("+password");
+    const user = await User.findOne({email}).select("+password role is_admin");
 
     if(!user || !(await user.correctPassword(password,user.password))){
         return next(new AppError("Incorrect Email or password",401))

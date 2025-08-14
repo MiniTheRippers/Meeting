@@ -1,12 +1,19 @@
+// frontend/meeting_webn/app/admin/users/page.js
+
 "use client";
 import React, { useState, useEffect } from "react";
+import { useRouter } from 'next/navigation'; // Use 'next/navigation' for App Router
 import Sidebar from '@/components/Sidebar';
 import Topbar from "@/components/Topbar";
 import axios from 'axios';
+import { useAuth } from '@/lib/authContext'; // Assuming authContext is in lib
 
-export default function UserPage() {
+export default function AdminUserPage() {
+    const { user, loading } = useAuth();
+    const router = useRouter();
+
     const [users, setUsers] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [pageLoading, setPageLoading] = useState(true);
     const [error, setError] = useState(null);
     const [showEditModal, setShowEditModal] = useState(false);
     const [currentUser, setCurrentUser] = useState(null);
@@ -14,19 +21,30 @@ export default function UserPage() {
 
     const fetchUsers = async () => {
         try {
-            const response = await axios.get('http://localhost:8000/api/users');
+            const response = await axios.get('http://localhost:8000/api/users', {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                }
+            });
             setUsers(response.data);
         } catch (err) {
             setError("ไม่สามารถดึงข้อมูลผู้ใช้งานได้");
             console.error(err);
         } finally {
-            setLoading(false);
+            setPageLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchUsers();
-    }, []);
+        // Redirect if not an admin
+        if (!loading && (!user || (user.role !== 'admin' && !user.is_admin))) {
+            router.push('/');
+        }
+        // Fetch users once the user data is loaded and they are an admin
+        if (user && (user.role === 'admin' || user.is_admin)) {
+            fetchUsers();
+        }
+    }, [user, loading, router]);
 
     const handleEditClick = (user) => {
         setCurrentUser(user);
@@ -41,20 +59,26 @@ export default function UserPage() {
         }
 
         try {
-            // สมมติว่ามี API endpoint สำหรับแก้ไขรหัสผ่าน
-            // Endpoint นี้ต้องถูกสร้างขึ้นมาใน Backend
             await axios.put(`http://localhost:8000/api/users/password/${currentUser._id}`, {
                 password: newPassword
+            }, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                }
             });
             alert("แก้ไขรหัสผ่านสำเร็จ!");
             setShowEditModal(false);
             setNewPassword('');
-            fetchUsers(); // ดึงข้อมูลใหม่เพื่อรีเฟรชหน้า
+            fetchUsers();
         } catch (err) {
             alert("แก้ไขรหัสผ่านไม่สำเร็จ");
             console.error(err);
         }
     };
+
+    if (loading || (!user || !user.is_admin)) {
+        return <div className="text-center mt-20">Loading...</div>;
+    }
 
     return (
         <div className="flex bg-gray-100 min-h-screen">
@@ -63,7 +87,7 @@ export default function UserPage() {
             <main className="flex-1 p-8 pt-[56px] pl-[80px]">
                 <h1 className="text-3xl font-bold mb-6 text-gray-800">ผู้ใช้งานระบบ</h1>
                 
-                {loading && (
+                {pageLoading && (
                     <div className="text-center text-gray-500">กำลังโหลดข้อมูล...</div>
                 )}
 
@@ -71,7 +95,7 @@ export default function UserPage() {
                     <div className="text-center text-red-500">{error}</div>
                 )}
 
-                {!loading && !error && (
+                {!pageLoading && !error && (
                     <div className="bg-white rounded-xl shadow-lg overflow-hidden">
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
@@ -107,9 +131,9 @@ export default function UserPage() {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm">
                                             <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                                user.is_admin ? 'bg-indigo-100 text-indigo-800' : 'bg-green-100 text-green-800'
+                                                (user.role === 'admin' || user.is_admin) ? 'bg-indigo-100 text-indigo-800' : 'bg-green-100 text-green-800'
                                             }`}>
-                                                {user.is_admin ? 'Admin' : 'User'}
+                                                {(user.role === 'admin' || user.is_admin) ? 'Admin' : 'User'}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

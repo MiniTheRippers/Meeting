@@ -35,9 +35,13 @@ const Login = () => {
                 email: formData.email,
                 password: formData.password
             }, { withCredentials: true });
-            dispatch(setAuthUser(res.data.user));
+            dispatch(setAuthUser(res.data.data.user));
             toast.success("เข้าสู่ระบบสำเร็จ");
-            router.push("/");
+            if (res.data.data.user.role === "admin") {
+                router.push("/admin/users");
+            } else {
+                router.push("/dashboard");
+            }
         } catch (error) {
             toast.error(error?.response?.data?.message || "เกิดข้อผิดพลาดในการเข้าสู่ระบบ");
         } finally {
